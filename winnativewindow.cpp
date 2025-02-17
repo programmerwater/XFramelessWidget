@@ -145,6 +145,8 @@ namespace
 		/*
 			When this native window changes size, it needs to manually resize
 			the XFramelessWidget child;
+
+			maximize problem:https://devblogs.microsoft.com/oldnewthing/20150304-00/?p=44543
 		*/
 		case WM_SIZE:
 		{
@@ -158,9 +160,18 @@ namespace
 			WINDOWPLACEMENT wp;
 			wp.length = sizeof(WINDOWPLACEMENT);
 			::GetWindowPlacement(hwnd, &wp);
-			int childTargetWidth = winRect.right / childWindow->devicePixelRatio();
-			int childTargetHeight = winRect.bottom / childWindow->devicePixelRatio();
-			nativeWinContext->childWidget->setGeometry(0, 0, childTargetWidth, childTargetHeight);
+			int xDelta = 0, yDelta = 0, widthDelta = 0, heightDelta = 0;
+			if (wp.showCmd == SW_MAXIMIZE)
+			{
+				/* to do: to test more detailedly; */
+				xDelta = 8;
+				yDelta = 8;
+				widthDelta = 16;
+				heightDelta = 8;
+			}
+			int childTargetWidth = (winRect.right - widthDelta) / childWindow->devicePixelRatio();
+			int childTargetHeight = (winRect.bottom - heightDelta) / childWindow->devicePixelRatio();
+			nativeWinContext->childWidget->setGeometry(xDelta, yDelta, childTargetWidth, childTargetHeight);
 			break;
 		}
 		case WM_DPICHANGED:

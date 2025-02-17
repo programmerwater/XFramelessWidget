@@ -23,6 +23,8 @@ Setting **NSWindow**'s style and appearance to hide the titlebar.
 
 ## ToDo
 
+- 系统缩放支持
+- 多个不同缩放设置屏幕场景的bug修复
 - QTest自动化测试；
 - 实现阴影绘制；
 - 更多顶层窗口特性支持
