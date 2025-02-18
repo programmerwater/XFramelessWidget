@@ -25,6 +25,42 @@ namespace
 		}
 	};
 
+	BOOL getChildRect(const HWND hwnd, LPRECT lpRect)
+	{
+		if (!lpRect)
+		{
+			return FALSE;
+		}
+		WINDOWPLACEMENT wp;
+		wp.length = sizeof(WINDOWPLACEMENT);
+		if (!::GetWindowPlacement(hwnd, &wp))
+		{
+			return FALSE;
+		}
+		WINDOWINFO windowInfo;
+		windowInfo.cbSize = sizeof(WINDOWINFO);
+		if (!::GetWindowInfo(hwnd, &windowInfo))
+		{
+			return FALSE;
+		}
+		if (wp.showCmd != SW_MAXIMIZE)
+		{
+			lpRect->left = 0;
+			lpRect->top = 0;
+			lpRect->right = windowInfo.rcWindow.right - windowInfo.rcWindow.left;
+			lpRect->bottom = windowInfo.rcWindow.bottom - windowInfo.rcWindow.top;
+			return TRUE;
+		}
+		
+		const int childWidth = windowInfo.rcWindow.right - windowInfo.rcWindow.left - windowInfo.cxWindowBorders * 2;
+		const int childHeight = windowInfo.rcWindow.bottom - windowInfo.rcWindow.top - windowInfo.cyWindowBorders * 2;
+		lpRect->left = windowInfo.cxWindowBorders;
+		lpRect->top = windowInfo.cyWindowBorders;
+		lpRect->right = lpRect->left + childWidth;
+		lpRect->bottom = lpRect->top + childHeight;
+		return TRUE;
+	}
+
 	LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 	{
 		Context *nativeWinContext = NULL;
@@ -154,24 +190,13 @@ namespace
 			{
 				break;
 			}
-			QWidget* childWindow = nativeWinContext->childWidget->window();
-			RECT winRect;
-			::GetClientRect(hwnd, &winRect);
-			WINDOWPLACEMENT wp;
-			wp.length = sizeof(WINDOWPLACEMENT);
-			::GetWindowPlacement(hwnd, &wp);
-			int xDelta = 0, yDelta = 0, widthDelta = 0, heightDelta = 0;
-			if (wp.showCmd == SW_MAXIMIZE)
+			RECT childRect;
+			if (!getChildRect(hwnd, &childRect))
 			{
-				/* to do: to test more detailedly; */
-				xDelta = 8;
-				yDelta = 8;
-				widthDelta = 16;
-				heightDelta = 8;
+				break;
 			}
-			int childTargetWidth = (winRect.right - widthDelta) / childWindow->devicePixelRatio();
-			int childTargetHeight = (winRect.bottom - heightDelta) / childWindow->devicePixelRatio();
-			nativeWinContext->childWidget->setGeometry(xDelta, yDelta, childTargetWidth, childTargetHeight);
+			nativeWinContext->childWidget->setGeometry(childRect.left, childRect.top, 
+				childRect.right - childRect.left, childRect.bottom - childRect.top);
 			break;
 		}
 		case WM_DPICHANGED:

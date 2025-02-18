@@ -73,6 +73,7 @@ XFramelessWidgetChild::XFramelessWidgetChild()
 {
 	QVBoxLayout *tempLayout = new QVBoxLayout;
 	tempLayout->setSpacing(0);
+	tempLayout->setContentsMargins(0, 30, 0, 0);
 	QPushButton *tempBtn = new QPushButton(this);
 	tempBtn->setText("btn");
 	tempBtn->raise();
@@ -83,8 +84,9 @@ XFramelessWidgetChild::XFramelessWidgetChild()
 	QLabel* tempLbl = new QLabel(this);
 	tempLbl->setText("text");
 	tempLbl->setFixedHeight(30);
-	tempLayout->addWidget(tempLbl);
+	tempLbl->setStyleSheet("border: 2px solid red;");
 	tempLayout->addSpacerItem(new QSpacerItem(0, 0, QSizePolicy::Expanding, QSizePolicy::Expanding));
+	tempLayout->addWidget(tempLbl);
 	this->setLayout(tempLayout);
 
 #if defined(Q_OS_WIN)
